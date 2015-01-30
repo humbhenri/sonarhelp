@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">    	
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+	
+	<title>Classes no Sonar com Problemas</title>    
+  </head>
+  <body>
+  
+	<div class="container-fluid">
+		<span class="text-center">
+			<h1>Mostra classes com problemas no Sonar</h1>
+		</span>
+	  
+		<div id="content" />
+	</div>
+             
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script src="react.min.js"></script>
+	<script src="JSXTransformer.js"></script>
+    <script type="text/jsx">     
+	
+	  var ResultList = React.createClass({
+					  
+		render: function() {
+		
+			var getClasseEProblema = function(linha) {
+				//13:29:47.406 INFO  - Class AcionadorMudancaSituacaoCreditoAvaliadoService exceeded class complexity thresold limit 19.5
+				var re = /INFO  - Class ([\w]+) (.*)/;
+				var match = re.exec(linha);
+				if (match) {
+					return {classe: match[1], problema: match[2]};
+				}
+				return null;
+			};
+		
+			var output = this.props.data;
+			arrayOfLines = output.split(/\r?\n/);
+			var results = arrayOfLines.map(getClasseEProblema).filter(function (e) {
+				return e != null;
+			});
+			results.sort(function(a, b){
+			  return a.classe == b.classe ? 0 : +(a.classe > b.classe) || -1;
+			});
+			var resultRows = results.map(function (result, index) {				
+				return (
+					<tr>
+					<td>{index + 1}</td>
+					<td>{result.classe}</td>
+					<td>{result.problema}</td>
+					</tr>
+				);
+			});
+			return (
+				<div className="table-responsive">
+				<table className="table table-striped table-hover">
+					<tr>
+						<th>#</th>
+						<th>Classe</th>
+						<th>Problema</th>
+					</tr>
+					<tbody>
+					{resultRows}
+					</tbody>
+				</table>
+				</div>
+			);
+		}
+	  });
+	
+	  var Sonar = React.createClass({
+	  
+		getInitialState: function() {
+			return {data: ''};
+		},
+	  
+		handleSubmit: function(e) {
+			e.preventDefault();
+			var sonarOutput = this.refs.sonarOutput.getDOMNode().value.trim();
+			this.setState({data: sonarOutput});
+			this.refs.sonarOutput.getDOMNode().value = '';
+			return;
+		},
+			
+	  
+		render: function() {
+			return (
+				<div className="sonar" >
+					<form className="sonarForm" onSubmit={this.handleSubmit}>
+						<div  className="text-center">
+							<textarea rows="10" cols="60" ref="sonarOutput" placeholder="Cole aqui a saída do plugin do Sonar do Eclipse :^)"/>
+							<br />
+							<input type="submit" value="Filtra classes com problemas" className="btn"/>
+						</div>
+						<br />
+						<ResultList data={this.state.data}/>
+					</form>
+				</div>
+			);
+		}
+	  });
+	  
+	  React.render(<Sonar />, document.getElementById('content'));
+    </script>
+  </body>
+</html>
