@@ -34,7 +34,7 @@
 		
 			var getClasseEProblema = function(linha) {
 				//13:29:47.406 INFO  - Class AcionadorMudancaSituacaoCreditoAvaliadoService exceeded class complexity thresold limit 19.5
-				var re = /INFO.*Class ([\w]+) (.*)/;
+				var re = /Class ([\w]+) exceeded (.*)/;
 				var match = re.exec(linha);
 				if (match) {
 					return {classe: match[1], problema: match[2]};
